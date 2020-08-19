@@ -1,17 +1,27 @@
-sudo: required
-language: java
-dist: trusty
-jdk:
-  - openjdk11
+jobs:
+  include:
+    - sudo: required
+      language: java
+      dist: trusty
+      jdk:
+        - openjdk11
 
-before_install:
-  - export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start;
+      before_install:
+        - export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start;
 
-before_script:
-  - MAVEN_OPTS="-Djava.awt.headless=true -Dtestfx.robot=glass -Dtestfx.headless=true -Dprism.order=sw -Dprism.text=t2k -Dtestfx.setup.timeout=2500"
+    - os: windows
+      language: bash
+      before_script:
+        - choco install openjdk11
+        - choco install maven --version 3.6.3
+        # Need to explicitly set PATH in windows until https://github.com/chocolatey/choco/issues/1851 is sorted
+        - export JAVA_HOME="/c/Program Files/OpenJDK/openjdk-11.0.5_10"
+        - export PATH=$PATH:$JAVA_HOME/bin:"/c/ProgramData/chocolatey/lib/maven/apache-maven-3.6.3/bin"
   
 script:
+  - MAVEN_OPTS="-Djava.awt.headless=true -Dtestfx.robot=glass -Dtestfx.headless=true -Dprism.order=sw -Dprism.text=t2k -Dtestfx.setup.timeout=2500"
   - mvn clean install
+  - if [ $TRAVIS_OS_NAME = 'windows' ]; then taskkill -IM "java.exe" -F; fi # Windows seems to have errant tasks hanging around sometime (https://travis-ci.community/t/errored-job-not-sure-why-test-passed-and-returned-0-solved/3763)
 
 after_failure:
  - find ./ -type d -name "surefire-reports" -print0 | xargs -0 -I {} find {} -iname "*.txt" -type f | xargs cat
