@@ -1328,40 +1328,6 @@ public class UtilitiesTest {
     }
 
     @Test
-    public void testTimestampToLittleEndianString(){
-        assertNull(Utilities.timestampToLittleEndianString(null, false));
-
-        Locale.setDefault(Locale.ENGLISH);
-        ZonedDateTime zonedDateTime =
-                ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0,
-                        ZoneId.of("Europe/Stockholm"));
-        Instant instant = zonedDateTime.toInstant();
-
-        String result = Utilities.timestampToLittleEndianString(instant, false);
-        assertEquals("00:00:00.000 Jan 01", result);
-
-        result = Utilities.timestampToLittleEndianString(instant, true);
-        assertEquals("00:00:00.000 Jan 01 1970", result);
-    }
-
-    @Test
-    public void testTimestampToBigEndianString(){
-        assertNull(Utilities.timestampToBigEndianString(null, false));
-
-        Locale.setDefault(Locale.ENGLISH);
-        ZonedDateTime zonedDateTime =
-                ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0,
-                        ZoneId.of("Europe/Stockholm"));
-        Instant instant = zonedDateTime.toInstant();
-
-        String result = Utilities.timestampToBigEndianString(instant, false);
-        assertEquals("Jan 01 00:00:00", result);
-
-        result = Utilities.timestampToBigEndianString(instant, true);
-        assertEquals("1970 Jan 01 00:00:00", result);
-    }
-
-    @Test
     public void testAreValuesEqual(){
         Alarm alarm = Alarm.none();
         Display display = Display.none();
