@@ -30,6 +30,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -64,10 +65,16 @@ import org.phoebus.applications.saveandrestore.Messages;
 import org.phoebus.applications.saveandrestore.data.DataProvider;
 import org.phoebus.applications.saveandrestore.filehandler.csv.CSVExporter;
 import org.phoebus.applications.saveandrestore.filehandler.csv.CSVImporter;
+import org.phoebus.applications.saveandrestore.model.ConfigPv;
 import org.phoebus.applications.saveandrestore.model.Node;
 import org.phoebus.applications.saveandrestore.model.NodeType;
 import org.phoebus.applications.saveandrestore.model.Tag;
 import org.phoebus.applications.saveandrestore.service.SaveAndRestoreService;
+import org.phoebus.applications.saveandrestore.ui.model.SnapshotEntry;
+import org.phoebus.applications.saveandrestore.ui.model.VDisconnectedData;
+import org.phoebus.applications.saveandrestore.ui.model.VNoData;
+import org.phoebus.applications.saveandrestore.ui.model.VSnapshot;
+import org.phoebus.applications.saveandrestore.ui.saveset.SaveSetController;
 import org.phoebus.applications.saveandrestore.ui.saveset.SaveSetTab;
 import org.phoebus.applications.saveandrestore.ui.snapshot.SnapshotNewTagDialog;
 import org.phoebus.applications.saveandrestore.ui.snapshot.SnapshotTab;
@@ -93,6 +100,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Stack;
 import java.util.concurrent.Executor;
+import java.util.concurrent.CountDownLatch;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -728,9 +736,20 @@ public class SaveAndRestoreController extends BaseSaveAndRestoreController {
         tabPane.getSelectionModel().select(tab);
     }
 
-    private void handleNewSaveSet(TreeItem<Node> parentTreeItem){
+    private List<SnapshotEntry> saveSetToSnapshotEntries(List<ConfigPv> configPvs) {
+        List<SnapshotEntry> snapshotEntries = new ArrayList<>();
+        for (ConfigPv configPv : configPvs) {
+            SnapshotEntry snapshotEntry =
+                    new SnapshotEntry(configPv, VNoData.INSTANCE, true, configPv.getReadbackPvName(), VNoData.INSTANCE, null, configPv.isReadOnly());
+            snapshotEntries.add(snapshotEntry);
+        }
 
-        List<String> existingFolderNames =
+        return snapshotEntries;
+    }
+
+    private void handleNewSaveSet(TreeItem<Node> parentTreeItem) {
+
+      List<String> existingFolderNames =
                 parentTreeItem.getChildren().stream()
                         .filter(item -> item.getValue().getNodeType().equals(NodeType.CONFIGURATION))
                         .map(item -> item.getValue().getName())

@@ -115,4 +115,14 @@ public class JMasarDataProvider implements DataProvider {
 	public List<Tag> getAllTags() {
 		return jmasarClient.getAllTags();
 	}
+
+	@Override
+	public List<Node> getFromPath(String path) {
+		return jmasarClient.getFromPath(path);
+	}
+
+	@Override
+	public String getFullPath(String uniqueNodeId) {
+		return jmasarClient.getFullPath(uniqueNodeId);
+	}
 }

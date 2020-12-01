@@ -40,4 +40,8 @@ public interface JMasarClient {
     public Node updateConfiguration(Node configToUpdate, List<ConfigPv> configPvList);
 
     public List<Tag> getAllTags();
+
+    public List<Node> getFromPath(String path);
+
+    public String getFullPath(String uniqueNodeId);
 }

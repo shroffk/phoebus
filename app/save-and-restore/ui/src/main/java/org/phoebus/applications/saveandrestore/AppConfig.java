@@ -40,6 +40,8 @@ import org.phoebus.framework.preferences.PreferencesReader;
 import org.phoebus.pv.PVFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -65,6 +67,20 @@ public class AppConfig {
     public void init(){
         preferences = PhoebusPreferenceService.userNodeForClass(SaveAndRestoreApplication.class);
         preferencesReader = new PreferencesReader(getClass(), "/save_and_restore_preferences.properties");
+    }
+
+    /**
+     * @brief Get an instance of the @ref SnapshotController.
+     *
+     * This static method is intended for use from Jython scripts. Using this method ensures that all class fields are
+     * properly dependency injected by Spring.
+     *
+     * @return Instance of the @ref SnapshotController
+     */
+    public static SnapshotController snapshotControllerInstance() {
+        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+        return (SnapshotController) context.getBean("snapshotController");
     }
 
     @Bean

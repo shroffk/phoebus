@@ -203,4 +203,24 @@ public class JMasarJerseyClient implements JMasarClient{
         ClientResponse response = getCall("/tags");
         return response.getEntity(new GenericType<List<Tag>>(){});
     }
+
+    @Override
+    public List<Node> getFromPath(String path) {
+        WebResource webResource = client.resource(jmasarServiceUrl + "/path")
+                .queryParam("path", path);
+        ClientResponse response = webResource.accept(CONTENT_TYPE_JSON)
+                .get(ClientResponse.class);
+
+        if (response.getStatus() != 200) {
+            throw new DataProviderException(response.getEntity(String.class));
+        }
+
+        return response.getEntity(new GenericType<List<Node>>(){});
+    }
+
+    @Override
+    public String getFullPath(String uniqueNodeId) {
+        ClientResponse response = getCall("/path/" + uniqueNodeId);
+        return response.getEntity(String.class);
+    }
 }

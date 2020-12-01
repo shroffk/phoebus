@@ -21,6 +21,10 @@ package org.phoebus.applications.saveandrestore.service;
 import org.phoebus.applications.saveandrestore.data.DataProvider;
 import org.phoebus.applications.saveandrestore.data.NodeAddedListener;
 import org.phoebus.applications.saveandrestore.data.NodeChangedListener;
+import org.phoebus.applications.saveandrestore.model.ConfigPv;
+import org.phoebus.applications.saveandrestore.model.Node;
+import org.phoebus.applications.saveandrestore.model.NodeType;
+import org.phoebus.applications.saveandrestore.model.SnapshotItem;
 import org.phoebus.applications.saveandrestore.ui.model.VDisconnectedData;
 import org.phoebus.applications.saveandrestore.ui.model.VNoData;
 import org.slf4j.Logger;
@@ -32,9 +36,12 @@ import org.phoebus.applications.saveandrestore.model.Node;
 import org.phoebus.applications.saveandrestore.model.SnapshotItem;
 import org.phoebus.applications.saveandrestore.model.Tag;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -64,6 +71,43 @@ public class SaveAndRestoreService {
         }
 
         return null;
+    }
+
+    /**
+     * Method that is searching for corresponding node.
+     * 
+     * This method has two searching modes, depending on how checkOnlyIfDuplicatedSnapshotName is set:
+     *  - When true, this method throws an exception if two or more snapshots are found with the provided name.
+     *  - When false, this method throws an exception if any node already has the provided name.
+     *
+     * @param name node name
+     * @param checkOnlyIfDuplicatedSnapshotName  true if we are searching for snapshot, false if we are searching for any type of node
+     * @return found snapshot node
+     * @throws SaveAndRestoreException if we are searching for snapshot node and we find more than one with matching name
+     *                                 if we are searching for any type of node and we find one node with matching name
+     */
+    public Optional<Node> findNode(String name, boolean checkOnlyIfDuplicatedSnapshotName) throws SaveAndRestoreException {
+        Queue<Node> unvisitedNodes = new ArrayDeque<Node>();
+        Node nodeFound = null;
+        Node root = getRootNode();
+        unvisitedNodes.add(root);
+        while(!unvisitedNodes.isEmpty()){
+            Node node = unvisitedNodes.remove();
+            if(node.getName().equals(name)){
+                if(!checkOnlyIfDuplicatedSnapshotName ){
+                    throw new SaveAndRestoreException("Node with " +name + " already exists!");
+                }
+                if(node.getNodeType() == NodeType.SNAPSHOT){
+                    if(nodeFound != null){
+                        throw new SaveAndRestoreException("More than 1 snapshot has name " + name + "!");
+                    }
+                    nodeFound = node;
+                }
+            }
+            unvisitedNodes.addAll(getChildNodes(node));
+        }
+
+        return Optional.ofNullable(nodeFound);
     }
 
     public Node getNode(String uniqueNodeId) {
@@ -151,6 +195,16 @@ public class SaveAndRestoreService {
 
     public Node getParentNode(String uniqueNodeId) throws Exception {
         Future<Node> future = executor.submit(() -> dataProvider.getSaveSetForSnapshot(uniqueNodeId));
+        return future.get();
+    }
+
+    public List<Node> getFromPath(String path) throws Exception {
+        Future<List<Node>> future = executor.submit(() -> dataProvider.getFromPath(path));
+        return future.get();
+    }
+
+    public String getFullPath(String uniqueNodeId) throws Exception {
+        Future<String> future = executor.submit(() -> dataProvider.getFullPath(uniqueNodeId));
         return future.get();
     }
 

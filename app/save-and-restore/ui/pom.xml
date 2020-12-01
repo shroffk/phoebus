@@ -99,6 +99,12 @@
 			<version>${vtype.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>4.0.3</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -120,6 +126,7 @@
 			<version>5.1.7.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
+
 
 	</dependencies>
 	<build>
