@@ -1,7 +1,7 @@
 <!--  Common settings for all ant build files -->
 <project name="settings">
   <!-- Global properties -->
-  <property name="version" value="4.6.4"/>
+  <property name="version" value="4.6.5"/>
 
   <!-- Shortcuts for paths within a module subdirectory -->
   <property name="src" value="src/main/java"/>
