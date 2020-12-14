@@ -9,7 +9,10 @@ package org.csstudio.scan.server.httpd;
 
 import org.csstudio.scan.server.ScanServer;
 import org.csstudio.scan.server.ScanServerInstance;
+import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
@@ -42,7 +45,18 @@ public class ScanWebServer
         context.setResourceBase(ScanServerInstance.class.getResource("/webroot").toExternalForm());
         context.addServlet(DefaultServlet.class, "/");
 
-        server.setHandler(context);
+        // Example for enabling 'request' log:
+        // 0:0:0:0:0:0:0:1 - - [14/Dec/2020:19:48:23 +0000] "GET / HTTP/1.1" 200 5019 "-" "Mozilla/...
+        final RequestLogHandler log_handler = new RequestLogHandler();
+        final NCSARequestLog log = new NCSARequestLog("/tmp/jetty-requests-yyyy_mm_dd.log");
+        log.setRetainDays(30);
+        log.setAppend(true);
+        log.setExtended(false);
+        log.setLogTimeZone("GMT");
+        log_handler.setRequestLog(log);
+
+        final HandlerCollection handlers = new HandlerCollection(context, log_handler);
+        server.setHandler(handlers);
     }
 
     public void start() throws Exception
